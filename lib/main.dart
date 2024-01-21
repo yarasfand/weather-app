@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:weatherapp/Repository/weatherapi.dart';
-import 'package:weatherapp/datamodels/postModels.dart';
-import 'package:weatherapp/screens/homepage.dart';
+import 'package:weatherapp/weatherApp/model/postModels.dart';
+import 'package:weatherapp/weatherApp/model/weatherapi.dart';
+import 'package:weatherapp/weatherApp/screens/homepage.dart';
 
 void main() async{
   WidgetsFlutterBinding.ensureInitialized();
