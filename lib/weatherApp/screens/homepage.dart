@@ -19,6 +19,7 @@ class _HomePageState extends State<HomePage> {
   String currentLocation = "";
   String city = "";
   double cityTemp = 0.0;
+  double? temperatureCelsius= 0.0;
 
   Future<void> checkLocationPermission() async {
     Geolocator.getServiceStatusStream().listen((status) {
@@ -97,7 +98,11 @@ class _HomePageState extends State<HomePage> {
 
       if (postModel.main != null) {
         double? temperatureKelvin = postModel.main!.temp;
-        double? temperatureCelsius = temperatureKelvin! - 273.15;
+        temperatureCelsius = temperatureKelvin! - 273.15;
+
+        setState(() {
+          city = cityName; // Update city here
+        });
 
         print('Temperature for $cityName (Kelvin): $temperatureKelvin');
         print('Temperature for $cityName (Celsius): $temperatureCelsius');
@@ -118,6 +123,7 @@ class _HomePageState extends State<HomePage> {
   Future<void> initializeLocation() async {
     await checkLocationPermission();
     await checkLocationPermissionAndFetchLocation();
+    await getWeather(city);
   }
 
   Widget build(BuildContext context) {
@@ -138,38 +144,47 @@ class _HomePageState extends State<HomePage> {
       );
     } else if (currentLat != null && currentLong != null) {
       return Scaffold(
-        appBar: AppBar(
-          centerTitle: true,
-          title: const Text('Weather App'),
-        ),
-        body: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              TextField(
-                controller: _textEditingController,
-                decoration: const InputDecoration(
-                  labelText: 'Enter text',
+        body: Container(
+          decoration: const BoxDecoration(
+            image: DecorationImage(
+              image: AssetImage('lib/weatherAssets/sunny.jpg'),
+              fit: BoxFit.cover,
+            ),
+          ),
+          child: Padding(
+            padding:  EdgeInsets.fromLTRB(10, 100, 10, 10),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                Text(
+                  "$city",
+                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.w300, color: Colors.white),
                 ),
-              ),
-              SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: () {
-                  setState(() {
-                    _enteredText = _textEditingController.text;
-                    print('$_enteredText');
-                    getWeather(_enteredText);
-                  });
-                },
-                child: Text('Submit'),
-              ),
-              SizedBox(height: 16),
-              Text(
-                'Entered Text: $_enteredText',
-                style: TextStyle(fontSize: 18),
-              ),
-            ],
+                Text(
+                  '${temperatureCelsius?.toStringAsFixed(0)}°C',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+                ),
+                TextField(
+                  controller: _textEditingController,
+                  decoration: const InputDecoration(
+                    labelText: 'Enter City Name',
+                    hintText: 'e.g Lahore'
+                  ),
+                ),
+                SizedBox(height: 16),
+                ElevatedButton(
+                  onPressed: () {
+                    setState(() {
+                      _enteredText = _textEditingController.text;
+                      print('$_enteredText');
+                      getWeather(_enteredText);
+                    });
+                  },
+                  child: Text('Submit'),
+                ),
+                SizedBox(height: 16),
+              ],
+            ),
           ),
         ),
       );
