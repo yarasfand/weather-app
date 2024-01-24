@@ -19,7 +19,9 @@ class _HomePageState extends State<HomePage> {
   String currentLocation = "";
   String city = "";
   double cityTemp = 0.0;
-  double? temperatureCelsius= 0.0;
+  double? temperatureCelsius = 0.0;
+  int offsetSeconds = 0;
+  DateTime localTime = DateTime.now();
 
   Future<void> checkLocationPermission() async {
     Geolocator.getServiceStatusStream().listen((status) {
@@ -97,11 +99,15 @@ class _HomePageState extends State<HomePage> {
       PostModels postModel = await postRepository.fetchPosts(cityName);
 
       if (postModel.main != null) {
-        double? temperatureKelvin = postModel.main!.temp;
+        double? temperatureKelvin = postModel.main!.temp!.toDouble();
         temperatureCelsius = temperatureKelvin! - 273.15;
 
+        offsetSeconds = postModel.timezone!;
+        DateTime utcTime = DateTime.now().toUtc();
+        Duration offsetDuration = Duration(seconds: offsetSeconds);
+        localTime = utcTime.add(offsetDuration);
         setState(() {
-          city = cityName; // Update city here
+          city = cityName;
         });
 
         print('Temperature for $cityName (Kelvin): $temperatureKelvin');
@@ -111,6 +117,7 @@ class _HomePageState extends State<HomePage> {
       }
     } catch (e) {
       print('Error getting weather data: $e');
+      // Handle the error and show a message to the user
     }
   }
 
@@ -143,32 +150,56 @@ class _HomePageState extends State<HomePage> {
         ),
       );
     } else if (currentLat != null && currentLong != null) {
+      String? imagePath;
+      Color textColor = Colors.white;
+
+      if (localTime.hour >= 19 || localTime.hour < 5) {
+        imagePath = 'lib/weatherAssets/night.jpg';
+      } else {
+        imagePath = 'lib/weatherAssets/sunny.jpg';
+      }
       return Scaffold(
         body: Container(
-          decoration: const BoxDecoration(
+          decoration: BoxDecoration(
             image: DecorationImage(
-              image: AssetImage('lib/weatherAssets/sunny.jpg'),
+              image: AssetImage(imagePath ?? ''),
               fit: BoxFit.cover,
             ),
           ),
           child: Padding(
-            padding:  EdgeInsets.fromLTRB(10, 100, 10, 10),
+            padding: const EdgeInsets.fromLTRB(10, 100, 10, 10),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.start,
               children: [
                 Text(
-                  "$city",
-                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.w300, color: Colors.white),
+                  city,
+                  style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.w300,
+                      color: textColor),
+                ),Text(
+                  '${temperatureCelsius?.toStringAsFixed(1)}°C',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: textColor,
+                  ),
                 ),
-                Text(
-                  '${temperatureCelsius?.toStringAsFixed(0)}°C',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
-                ),
+                SizedBox(height: 16),
                 TextField(
                   controller: _textEditingController,
-                  decoration: const InputDecoration(
+                  style: TextStyle(color: Colors.white), // Set text color to white
+                  decoration: InputDecoration(
                     labelText: 'Enter City Name',
-                    hintText: 'e.g Lahore'
+                    hintText: 'e.g Lahore',
+                    labelStyle: TextStyle(color: Colors.white), // Set label color to white
+                    hintStyle: TextStyle(color: Colors.white.withOpacity(0.5)), // Set hint color to semi-transparent white
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.white), // Set border color to white
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.white), // Set focused border color to white
+                    ),
                   ),
                 ),
                 SizedBox(height: 16),
@@ -180,7 +211,13 @@ class _HomePageState extends State<HomePage> {
                       getWeather(_enteredText);
                     });
                   },
-                  child: Text('Submit'),
+                  style: ElevatedButton.styleFrom(
+                    primary: Colors.white, // Set button background color to white
+                  ),
+                  child: Text(
+                    'Submit',
+                    style: TextStyle(color: Colors.black), // Set button text color to black
+                  ),
                 ),
                 SizedBox(height: 16),
               ],
