@@ -6,7 +6,7 @@ class API{
 
   API(){
 
-    _dio.options.baseUrl = "https://api.openweathermap.org/data/2.5";
+    _dio.options.baseUrl = "https://api.open-meteo.com/v1";
     _dio.interceptors.add(PrettyDioLogger());
 
   }

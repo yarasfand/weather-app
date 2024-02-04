@@ -2,14 +2,15 @@ import 'package:dio/dio.dart';
 import 'package:weatherapp/weatherApp/model/postModels.dart';
 
 import 'api.dart';
-class PostRepository {
+
+class GetWeatherUpdate {
   API api = API();
 
-  Future<PostModels> fetchPosts(String cityName) async {
+  Future<WeatherModel> fetchWeather(String lat, String long) async {
     try {
-      Response response = await api.sendRequests.get("/weather?q=$cityName&appid=bd5e378503939ddaee76f12ad7a97608");
+      Response response = await api.sendRequests.get("/forecast?latitude=$lat&longitude=$long&current=temperature_2m,wind_speed_10m&hourly=temperature_2m,wind_speed_10m,weather_code&daily=temperature_2m_max,temperature_2m_min,sunrise,sunset");
       Map<String, dynamic> postMap = response.data;
-      return PostModels.fromJson(postMap);
+      return WeatherModel.fromJson(postMap);
     } catch (err) {
       throw (err);
     }
