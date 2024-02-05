@@ -6,6 +6,7 @@ import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:worldtime/worldtime.dart';
 import 'package:intl/intl.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
+import 'package:shimmer/shimmer.dart';
 
 import '../controller/data_loader_bloc.dart';
 import '../model/postModels.dart';
@@ -33,8 +34,6 @@ class _HomePageState extends State<HomePage> {
   String refreshLat = '';
   String refreshLong = '';
 
-  GlobalKey<RefreshIndicatorState> _refreshKey =
-      GlobalKey<RefreshIndicatorState>();
 
   Future<void> checkLocationPermission() async {
     Geolocator.getServiceStatusStream().listen((status) {
@@ -73,21 +72,17 @@ class _HomePageState extends State<HomePage> {
 
   Future<void> getAddress(double lat, double long) async {
     try {
-      if (lat != null && long != null) {
-        List<Placemark> cityName = await GeocodingPlatform.instance
-            .placemarkFromCoordinates(lat, long, localeIdentifier: "en");
-        if (cityName.isNotEmpty) {
-          setState(() {
-            if (cityName[4].locality != null) {
-              city = cityName[4].locality!;
-            }
-          });
-        }
-        print("sfjmsfllllllllll");
-      } else {
-        print('Latitude or longitude is null');
+      List<Placemark> cityName = await GeocodingPlatform.instance
+          .placemarkFromCoordinates(lat, long, localeIdentifier: "en");
+      if (cityName.isNotEmpty) {
+        setState(() {
+          if (cityName[4].locality != null) {
+            city = cityName[4].locality!;
+          }
+        });
       }
-    } catch (e) {
+      print("sfjmsfllllllllll");
+        } catch (e) {
       print('Error getting address: $e');
     }
   }
@@ -186,8 +181,7 @@ class _HomePageState extends State<HomePage> {
           );
 
           setState(() {
-            temperatureCelsius =
-                null; // Set temperature to null to indicate loading
+            temperatureCelsius = null;
           });
 
           final _worldtimePlugin = Worldtime();
@@ -238,31 +232,16 @@ class _HomePageState extends State<HomePage> {
         .add(FetchWeatherEvent(currentLat.toString(), currentLong.toString()));
   }
 
+  @override
   Widget build(BuildContext context) {
     return BlocBuilder<WeatherBloc, WeatherState>(
       builder: (context, state) {
         if (state is WeatherLoadingState || temperatureCelsius == null) {
           return Scaffold(
-            backgroundColor: Colors.white60,
-            body: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Text(
-                  'Loading data...',
-                  style: TextStyle(
-                    fontSize: 26,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black,
-                  ),
-                ),
-                SizedBox(height: 20),
-                Center(
-                  child: LoadingAnimationWidget.discreteCircle(
-                    size: 100,
-                    color: Colors.blue,
-                  ),
-                ),
-              ],
+            body: Shimmer.fromColors(
+              baseColor: Colors.grey[300]!,
+              highlightColor: Colors.grey[100]!,
+              child: buildShimmerContent(context),
             ),
           );
         } else if (state is WeatherLoadedState) {
@@ -282,7 +261,6 @@ class _HomePageState extends State<HomePage> {
             );
           } else if (currentLat != null &&
               currentLong != null &&
-              weather != null &&
               imagePath != null) {
             Color textColor = Colors.white;
             String dayWeatherEmoji = '⛅';
@@ -305,6 +283,8 @@ class _HomePageState extends State<HomePage> {
 
             return Scaffold(
               body: Container(
+                height: MediaQuery.of(context).size.height,
+                width: MediaQuery.of(context).size.width,
                 decoration: BoxDecoration(
                   image: DecorationImage(
                     image: AssetImage(imagePath ?? ''),
@@ -330,8 +310,7 @@ class _HomePageState extends State<HomePage> {
                             ),
                           ),
                           Row(
-                            mainAxisAlignment: MainAxisAlignment
-                                .center, // Center align horizontally
+                            mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Text(
                                 '${(temperatureCelsius?.round())}°',
@@ -392,19 +371,19 @@ class _HomePageState extends State<HomePage> {
 
                             return Container(
                               width: cardWidth,
-                              margin: EdgeInsets.symmetric(horizontal: 3),
+                              margin: const EdgeInsets.symmetric(horizontal: 3),
                               child: Material(
                                 color: Colors.transparent,
                                 child: Column(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
                                     Text(
-                                      '${DateFormat.jm().format(cardTime)}',
+                                      DateFormat.jm().format(cardTime),
                                       style: TextStyle(
                                         color: textColor,
                                       ),
                                     ),
-                                    SizedBox(
+                                    const SizedBox(
                                       height: 10,
                                     ),
                                     Text(
@@ -415,11 +394,11 @@ class _HomePageState extends State<HomePage> {
                                         fontSize: 24,
                                       ),
                                     ),
-                                    SizedBox(
+                                    const SizedBox(
                                       height: 15,
                                     ),
                                     Text(
-                                      "${weather.hourly!.temperature2m![hourlyIndexes[index]]?.round()}°C",
+                                      "${weather.hourly!.temperature2m![hourlyIndexes[index]].round()}°C",
                                       style: TextStyle(
                                         color: textColor,
                                       ),
@@ -437,7 +416,7 @@ class _HomePageState extends State<HomePage> {
                             .withOpacity(0.5), // Adjust the opacity as needed
                         height: 10, // Adjust the height as needed
                       ),
-                      Container(
+                      SizedBox(
                         height: MediaQuery.of(context).size.width / 3,
                         child: ListView.builder(
                           scrollDirection: Axis.horizontal,
@@ -466,7 +445,7 @@ class _HomePageState extends State<HomePage> {
 
                             return Container(
                               width: cardWidth,
-                              margin: EdgeInsets.symmetric(horizontal: 3),
+                              margin: const EdgeInsets.symmetric(horizontal: 3),
                               child: Material(
                                 color: Colors.transparent,
                                 child: Column(
@@ -498,7 +477,7 @@ class _HomePageState extends State<HomePage> {
                                         fontSize: 24,
                                       ),
                                     ),
-                                    SizedBox(
+                                    const SizedBox(
                                       height: 5,
                                     ),
                                     Text(
@@ -523,7 +502,7 @@ class _HomePageState extends State<HomePage> {
               floatingActionButton: FloatingActionButton(
                 onPressed: _showTypeAheadField,
                 tooltip: 'Show City Selector',
-                child: Icon(Icons.search_outlined),
+                child: const Icon(Icons.search_outlined),
               ),
             );
           } else {
@@ -543,10 +522,11 @@ class _HomePageState extends State<HomePage> {
             );
           }
         } else {
-          print("Hello");
-          return const Scaffold(
-            body: Center(
-              child: CircularProgressIndicator(),
+          return Scaffold(
+            body: Shimmer.fromColors(
+              baseColor: Colors.grey[300]!,
+              highlightColor: Colors.grey[100]!,
+              child: buildShimmerContent(context),
             ),
           );
         }
@@ -555,18 +535,18 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _showTypeAheadField() {
-    TextEditingController _textEditingController = TextEditingController();
-    String _enteredText = '';
+    TextEditingController textEditingController = TextEditingController();
+    String enteredText = '';
 
     showModalBottomSheet(
       context: context,
-      builder: (context) => Container(
+      builder: (context) => SizedBox(
         height: MediaQuery.of(context).size.height * 0.7,
         child: Column(
           children: [
-            SizedBox(height: 5),
-            Padding(
-              padding: const EdgeInsets.all(10),
+            const SizedBox(height: 5),
+            const Padding(
+              padding: EdgeInsets.all(10),
               child: Text(
                 "Search City",
                 style: TextStyle(fontSize: 15, color: Colors.black),
@@ -588,10 +568,10 @@ class _HomePageState extends State<HomePage> {
                 },
                 onSuggestionSelected: (String cityName) {
                   // Update the text field with the selected city
-                  _textEditingController.text = cityName;
+                  textEditingController.text = cityName;
                 },
                 textFieldConfiguration: TextFieldConfiguration(
-                  controller: _textEditingController,
+                  controller: textEditingController,
                   style: const TextStyle(color: Colors.black),
                   decoration: const InputDecoration(
                     border: OutlineInputBorder(),
@@ -612,10 +592,9 @@ class _HomePageState extends State<HomePage> {
             ElevatedButton(
               onPressed: () {
                 setState(() {
-                  _enteredText = _textEditingController.text;
-                  print('$_enteredText');
+                  enteredText = textEditingController.text;
                   imagePath = null;
-                  enteredCityName(_enteredText);
+                  enteredCityName(enteredText);
                 });
                 Navigator.pop(context);
               },
@@ -629,6 +608,175 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget buildShimmerContent(BuildContext context) {
+    return SizedBox(
+      height: MediaQuery.of(context).size.height,
+      width: MediaQuery.of(context).size.width,
+      child: Padding(
+        padding: EdgeInsets.fromLTRB(
+            10, MediaQuery.of(context).size.height / 9, 10, 10),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            Column(
+              mainAxisAlignment:
+                  MainAxisAlignment.center, // Center align vertically
+              children: [
+                const Text(
+                  'City',
+                  style: TextStyle(
+                    fontSize: 30,
+                    fontWeight: FontWeight.w300,
+                  ),
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      '00',
+                      style: TextStyle(
+                        fontSize: MediaQuery.of(context).size.height / 11,
+                        fontWeight: FontWeight.w300,
+                      ),
+                    ),
+                    Transform.translate(
+                      offset: const Offset(8, -20),
+                      // Adjust the vertical offset as needed
+                      child: Transform.scale(
+                        scale: 1.5, // Adjust the scale factor as needed
+                        child: const Text(
+                          'C',
+                          style: TextStyle(
+                            fontSize: 28, // Adjust the font size as needed
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const Text(
+                  "00/00 °C",
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w400,
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: MediaQuery.of(context).size.height / 12.5),
+            const SizedBox(height: 16),
+            SizedBox(
+              height: MediaQuery.of(context).size.width / 3,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: 10,
+                itemBuilder: (context, index) {
+                  double cardWidth = MediaQuery.of(context).size.width / 4.5;
+
+                  return Container(
+                    width: cardWidth,
+                    margin: const EdgeInsets.symmetric(horizontal: 3),
+                    child: const Material(
+                      color: Colors.black54,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            "***",
+                            style: TextStyle(),
+                          ),
+                          SizedBox(
+                            height: 10,
+                          ),
+                          Text(
+                            "⛅",
+                            style: TextStyle(
+                              fontSize: 24,
+                            ),
+                          ),
+                          SizedBox(
+                            height: 15,
+                          ),
+                          Text(
+                            "00C",
+                          ),
+                          // Add other card contents here
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+            Divider(
+              color:
+                  Colors.white.withOpacity(0.5), // Adjust the opacity as needed
+              height: 10, // Adjust the height as needed
+            ),
+            SizedBox(
+              height: MediaQuery.of(context).size.width / 3,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: 5,
+                itemBuilder: (context, index) {
+                  double cardWidth = MediaQuery.of(context).size.width / 4.5;
+
+                  return Container(
+                    width: cardWidth,
+                    margin: const EdgeInsets.symmetric(horizontal: 3),
+                    child: const Material(
+                      color: Colors.transparent,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            "***",
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          SizedBox(
+                            height: 5,
+                          ),
+                          Text(
+                            "***",
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          SizedBox(
+                            height: 10,
+                          ),
+                          Text(
+                            '⛅',
+                            style: TextStyle(
+                              fontSize: 24,
+                            ),
+                          ),
+                          SizedBox(
+                            height: 5,
+                          ),
+                          Text(
+                            "00/00°C",
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+            const SizedBox(height: 16),
           ],
         ),
       ),
