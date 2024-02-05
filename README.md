@@ -71,3 +71,19 @@
   <li>Dive into the magic! ✨</li>
 </ol>
 <p>Feel free to reach out for collaboration or to share your ideas. Let's make tech magic! 🚀✨</p>
+
+# Photo / Video Documentation
+
+<table style="width: 99%;">
+  <tr>
+    <td style="width: 60%;">
+  <video src = "https://github.com/yarasfand/weather-app/assets/133318363/4ebd6ac6-80f8-4f33-9bb9-0992a9cd6ff3"  controls style="display: inline-block; width: 30vw;" ></video>
+ </td>
+
+<td style="width: 38%;">
+          <img src= "https://github.com/yarasfand/weather-app/assets/133318363/b90ea99d-551a-4570-8946-96c65e934580"></img>
+   </td>
+  </tr>
+</table>
+
+
